@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
   Typography,
@@ -13,38 +11,63 @@ import {
   Container,
   useTheme,
   useMediaQuery,
+  Skeleton, // Import Skeleton
 } from "@mui/material";
-
-interface Student {
-  name: string;
-  math: number;
-  physics: number;
-  chemistry: number;
-}
+import { getTop10Students } from "../services/studentService";
+import { TopStudent } from "../types";
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
-  const [topStudents, setTopStudents] = useState<Student[]>([]);
+  const [topStudents, setTopStudents] = useState<TopStudent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
-    // Simulated data fetch
-    const fetchedStudents: Student[] = [
-      { name: "Student 1", math: 9.5, physics: 9.2, chemistry: 9.8 },
-      { name: "Student 2", math: 9.3, physics: 9.4, chemistry: 9.1 },
-      { name: "Student 3", math: 9.2, physics: 9.0, chemistry: 9.5 },
-      { name: "Student 4", math: 9.0, physics: 9.3, chemistry: 9.2 },
-      { name: "Student 5", math: 8.9, physics: 9.1, chemistry: 9.0 },
-      { name: "Student 6", math: 8.8, physics: 8.9, chemistry: 9.3 },
-      { name: "Student 7", math: 8.7, physics: 9.0, chemistry: 8.9 },
-      { name: "Student 8", math: 8.6, physics: 8.8, chemistry: 9.1 },
-      { name: "Student 9", math: 8.5, physics: 8.7, chemistry: 9.0 },
-      { name: "Student 10", math: 8.4, physics: 8.6, chemistry: 8.8 },
-    ];
-    setTopStudents(fetchedStudents);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const students = await getTop10Students();
+        setTopStudents(students);
+      } catch (err) {
+        toast.error("Failed to fetch top students.");
+        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Paper elevation={3} sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Top 10 Students of Group A
+          </Typography>
+          <Skeleton variant="rectangular" width="100%" height={300} />
+        </Paper>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Paper elevation={3} sx={{ p: 3 }}>
+          <Typography variant="h6" color="error">
+            Error: {error}
+          </Typography>
+        </Paper>
+      </Container>
+    );
+  }
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -59,25 +82,41 @@ const Dashboard = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Rank</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell align="right">Math</TableCell>
-                <TableCell align="right">Physics</TableCell>
-                <TableCell align="right">Chemistry</TableCell>
+                <TableCell>SBD</TableCell>
+                <TableCell align="right">Toán</TableCell>
+                <TableCell align="right">Ngữ văn</TableCell>
+                <TableCell align="right">Ngoại ngữ</TableCell>
+                <TableCell align="right">Vật lý</TableCell>
+                <TableCell align="right">Hóa học</TableCell>
+                <TableCell align="right">Sinh học</TableCell>
+                <TableCell align="right">Total Score</TableCell>{" "}
               </TableRow>
             </TableHead>
             <TableBody>
               {topStudents.map((student, index) => (
-                <TableRow key={student.name} hover>
+                <TableRow key={student.sbd} hover>
                   <TableCell component="th" scope="row">
                     {index + 1}
                   </TableCell>
-                  <TableCell>{student.name}</TableCell>
-                  <TableCell align="right">{student.math.toFixed(1)}</TableCell>
+                  <TableCell>{student.sbd}</TableCell>
+                  <TableCell align="right">{student.toan.toFixed(1)}</TableCell>
                   <TableCell align="right">
-                    {student.physics.toFixed(1)}
+                    {student.ngu_van.toFixed(1)}
                   </TableCell>
                   <TableCell align="right">
-                    {student.chemistry.toFixed(1)}
+                    {student.ngoai_ngu.toFixed(1)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {student.vat_li.toFixed(1)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {student.hoa_hoc.toFixed(1)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {student.sinh_hoc.toFixed(1)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {student.totalScore.toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))}

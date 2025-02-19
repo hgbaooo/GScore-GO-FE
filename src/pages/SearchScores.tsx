@@ -5,7 +5,7 @@ import {
   Typography,
   TextField,
   Button,
-  CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import { getStudentScores } from "../services/studentService";
 import { StudentScore } from "../types";
@@ -47,22 +47,36 @@ const SearchScores = () => {
     <Box sx={{ padding: 3 }}>
       <Paper sx={{ padding: 2, mb: 2 }}>
         <Typography variant="h6">Search Student Score</Typography>
-        <TextField
-          label="Enter Registration Number"
-          variant="outlined"
-          fullWidth
-          value={registrationNumber}
-          onChange={(e) => setRegistrationNumber(e.target.value)}
-          sx={{ marginBottom: 2 }}
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSearch}
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} color="inherit" /> : "Search"}
-        </Button>
+        {loading ? (
+          <>
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={40}
+              sx={{ marginBottom: 2 }}
+            />
+            <Skeleton variant="rectangular" width={120} height={40} />
+          </>
+        ) : (
+          <>
+            <TextField
+              label="Enter Registration Number"
+              variant="outlined"
+              fullWidth
+              value={registrationNumber}
+              onChange={(e) => setRegistrationNumber(e.target.value)}
+              sx={{ marginBottom: 2 }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              Search
+            </Button>
+          </>
+        )}
       </Paper>
 
       {notFound && (
@@ -76,19 +90,23 @@ const SearchScores = () => {
       {studentScore && (
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h6">Student Scores</Typography>
-          <Box sx={{ mt: 2 }}>
-            <Typography>SBD: {studentScore.sbd}</Typography>
-            <Typography>Toán: {studentScore.toan}</Typography>
-            <Typography>Ngữ văn: {studentScore.ngu_van}</Typography>
-            <Typography>Ngoại ngữ: {studentScore.ngoai_ngu}</Typography>
-            <Typography>Vật lý: {studentScore.vat_li}</Typography>
-            <Typography>Hóa học: {studentScore.hoa_hoc}</Typography>
-            <Typography>Sinh học: {studentScore.sinh_hoc}</Typography>
-            <Typography>Lịch sử: {studentScore.lich_su}</Typography>
-            <Typography>Địa lý: {studentScore.dia_li}</Typography>
-            <Typography>GDCD: {studentScore.gdcd}</Typography>
-            <Typography>Mã ngoại ngữ: {studentScore.ma_ngoai_ngu}</Typography>
-          </Box>
+          {loading ? (
+            <Skeleton variant="rectangular" width="100%" height={150} />
+          ) : (
+            <Box sx={{ mt: 2 }}>
+              <Typography>SBD: {studentScore.sbd}</Typography>
+              <Typography>Toán: {studentScore.toan}</Typography>
+              <Typography>Ngữ văn: {studentScore.ngu_van}</Typography>
+              <Typography>Ngoại ngữ: {studentScore.ngoai_ngu}</Typography>
+              <Typography>Vật lý: {studentScore.vat_li}</Typography>
+              <Typography>Hóa học: {studentScore.hoa_hoc}</Typography>
+              <Typography>Sinh học: {studentScore.sinh_hoc}</Typography>
+              <Typography>Lịch sử: {studentScore.lich_su}</Typography>
+              <Typography>Địa lý: {studentScore.dia_li}</Typography>
+              <Typography>GDCD: {studentScore.gdcd}</Typography>
+              <Typography>Mã ngoại ngữ: {studentScore.ma_ngoai_ngu}</Typography>
+            </Box>
+          )}
         </Paper>
       )}
     </Box>
