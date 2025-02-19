@@ -5,124 +5,93 @@ import {
   Typography,
   TextField,
   Button,
-  Container,
-  useTheme,
-  useMediaQuery,
+  CircularProgress,
 } from "@mui/material";
+import { getStudentScores } from "../services/studentService";
+import { StudentScore } from "../types";
+import toast from "react-hot-toast";
 
 const SearchScores = () => {
   const [registrationNumber, setRegistrationNumber] = useState("");
-  const [studentScore, setStudentScore] = useState<{
-    math: number | null;
-    physics: number | null;
-    chemistry: number | null;
-  }>({ math: null, physics: null, chemistry: null });
+  const [studentScore, setStudentScore] = useState<StudentScore | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const handleSearch = async () => {
+    setLoading(true);
+    setStudentScore(null);
+    setNotFound(false);
 
-  const handleSearch = () => {
-    const fakeDatabase: {
-      [key: string]: { math: number; physics: number; chemistry: number };
-    } = {
-      "12345": { math: 8.9, physics: 7.5, chemistry: 9.2 },
-      "67890": { math: 7.5, physics: 6.8, chemistry: 8.0 },
-      "11223": { math: 9.2, physics: 8.7, chemistry: 9.0 },
-    };
+    if (!/^\d{8}$/.test(registrationNumber)) {
+      toast.error("Registration number must be 8 digits.");
+      setLoading(false);
+      return;
+    }
 
-    const scores = fakeDatabase[registrationNumber] || {
-      math: null,
-      physics: null,
-      chemistry: null,
-    };
-    setStudentScore(scores);
+    try {
+      const score = await getStudentScores(registrationNumber);
+      if (score) {
+        setStudentScore(score);
+      } else {
+        setNotFound(true);
+      }
+    } catch (error) {
+      toast.error("An error occurred while fetching data.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Typography variant="h5" gutterBottom>
-          Search Student Score
-        </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: isSmallScreen ? "column" : "row",
-            gap: 2,
-            mb: 2,
-          }}
+    <Box sx={{ padding: 3 }}>
+      <Paper sx={{ padding: 2, mb: 2 }}>
+        <Typography variant="h6">Search Student Score</Typography>
+        <TextField
+          label="Enter Registration Number"
+          variant="outlined"
+          fullWidth
+          value={registrationNumber}
+          onChange={(e) => setRegistrationNumber(e.target.value)}
+          sx={{ marginBottom: 2 }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSearch}
+          disabled={loading}
         >
-          <TextField
-            label="Enter Registration Number"
-            variant="outlined"
-            fullWidth
-            value={registrationNumber}
-            onChange={(e) => setRegistrationNumber(e.target.value)}
-            sx={{ flex: isSmallScreen ? "1 1 auto" : "1 1 70%" }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSearch}
-            sx={{
-              flex: isSmallScreen ? "1 1 auto" : "0 0 30%",
-              height: isSmallScreen ? "auto" : "56px",
-            }}
-          >
-            Search
-          </Button>
-        </Box>
-
-        {studentScore.math !== null ? (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Student Scores
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: isSmallScreen ? "column" : "row",
-                gap: 2,
-              }}
-            >
-              {Object.entries(studentScore).map(([subject, score]) => (
-                <Box
-                  key={subject}
-                  sx={{
-                    flex: isSmallScreen ? "1 1 100%" : "1 1 calc(33.33% - 8px)",
-                  }}
-                >
-                  <Paper
-                    elevation={2}
-                    sx={{
-                      p: 2,
-                      textAlign: "center",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      bgcolor: "secondary.light",
-                      color: "secondary.contrastText",
-                    }}
-                  >
-                    <Typography variant="h4">{score}</Typography>
-                    <Typography variant="body2">
-                      {subject.charAt(0).toUpperCase() + subject.slice(1)}
-                    </Typography>
-                  </Paper>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        ) : (
-          <Typography
-            sx={{ mt: 4, textAlign: "center", color: "text.secondary" }}
-          >
-            Enter a registration number and click search to view student scores.
-          </Typography>
-        )}
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Search"}
+        </Button>
       </Paper>
-    </Container>
+
+      {notFound && (
+        <Paper sx={{ padding: 2, backgroundColor: "#ffebee" }}>
+          <Typography variant="body1" color="error">
+            No student found with the provided registration number.
+          </Typography>
+        </Paper>
+      )}
+
+      {studentScore && (
+        <Paper sx={{ padding: 2 }}>
+          <Typography variant="h6">Student Scores</Typography>
+          <Box sx={{ mt: 2 }}>
+            <Typography>SBD: {studentScore.sbd}</Typography>
+            <Typography>Toán: {studentScore.toan}</Typography>
+            <Typography>Ngữ văn: {studentScore.ngu_van}</Typography>
+            <Typography>Ngoại ngữ: {studentScore.ngoai_ngu}</Typography>
+            <Typography>Vật lý: {studentScore.vat_li}</Typography>
+            <Typography>Hóa học: {studentScore.hoa_hoc}</Typography>
+            <Typography>Sinh học: {studentScore.sinh_hoc}</Typography>
+            <Typography>Lịch sử: {studentScore.lich_su}</Typography>
+            <Typography>Địa lý: {studentScore.dia_li}</Typography>
+            <Typography>GDCD: {studentScore.gdcd}</Typography>
+            <Typography>Mã ngoại ngữ: {studentScore.ma_ngoai_ngu}</Typography>
+          </Box>
+        </Paper>
+      )}
+    </Box>
   );
 };
 
