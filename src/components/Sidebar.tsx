@@ -8,6 +8,8 @@ import {
   IconButton,
   Toolbar,
   Typography,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Dashboard,
@@ -15,6 +17,7 @@ import {
   BarChart,
   Settings,
   Menu,
+  ChevronLeft,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 
@@ -32,50 +35,50 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleDrawerToggle = () => {
     setOpen(!open);
   };
 
+  const drawerWidth = open ? 240 : 60;
+
   return (
     <Drawer
-      variant="permanent"
+      variant={isMobile ? "temporary" : "permanent"}
       open={open}
+      onClose={handleDrawerToggle}
       sx={{
-        width: open ? 240 : 60,
+        width: drawerWidth,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
-          width: open ? 240 : 60,
+          width: drawerWidth,
           boxSizing: "border-box",
-          position: "absolute",
-          top: 64,
-          left: 0,
-          transition: (theme) =>
-            theme.transitions.create("width", {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
+          top: { xs: 0, sm: 64 },
+          height: { xs: "100%", sm: "calc(100% - 64px)" },
+          transition: theme.transitions.create("width", {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         },
       }}
     >
       <Toolbar
         sx={{
-          justifyContent: open ? "space-between" : "center",
+          display: "flex",
           alignItems: "center",
-          px: 1,
+          justifyContent: "flex-end",
+          px: [1],
         }}
       >
         {open && (
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Menu
           </Typography>
         )}
-        <IconButton
-          color="inherit"
-          aria-label="close drawer"
-          onClick={handleDrawerToggle}
-        >
-          <Menu />
+        <IconButton onClick={handleDrawerToggle}>
+          {open ? <ChevronLeft /> : <Menu />}
         </IconButton>
       </Toolbar>
 
