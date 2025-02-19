@@ -1,13 +1,3 @@
-export interface Student {
-  name: string;
-  score: number;
-}
-
-export interface ScoreCategory {
-  range: string;
-  count: number;
-}
-
 export interface StudentScore {
   _id: string;
   sbd: string;
@@ -22,4 +12,37 @@ export interface StudentScore {
   gdcd: number;
   ma_ngoai_ngu: string;
   __v: number;
+}
+
+export interface TopStudent {
+  _id: string;
+  sbd: string;
+  toan: number;
+  ngu_van: number;
+  ngoai_ngu: number;
+  vat_li: number;
+  hoa_hoc: number;
+  sinh_hoc: number;
+  ma_ngoai_ngu: string;
+  __v: number;
+  totalScore: number;
+}
+
+export interface ReportData {
+  ">=8": SubjectScores;
+  "6-8": SubjectScores;
+  "4-6": SubjectScores;
+  "<4": SubjectScores;
+}
+
+export interface SubjectScores {
+  toan: number;
+  ngu_van: number;
+  ngoai_ngu: number;
+  vat_li: number;
+  hoa_hoc: number;
+  sinh_hoc: number;
+  lich_su: number;
+  dia_li: number;
+  gdcd: number;
 }
