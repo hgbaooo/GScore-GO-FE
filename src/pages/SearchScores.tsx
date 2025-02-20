@@ -1,3 +1,5 @@
+import type React from "react";
+
 import { useState } from "react";
 import {
   Box,
@@ -38,10 +40,24 @@ const SearchScores = () => {
         setNotFound(true);
       }
     } catch (error) {
-      toast.error("An error occurred while fetching data.");
-      console.error(error);
+      if (
+        error instanceof Error &&
+        (error as { response?: { status: number } }).response &&
+        (error as { response?: { status: number } }).response?.status === 404
+      ) {
+        setNotFound(true);
+      } else {
+        toast.error("An error occurred while fetching data.");
+        console.error(error);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      handleSearch();
     }
   };
 
@@ -80,20 +96,28 @@ const SearchScores = () => {
         <Typography variant="h5" gutterBottom>
           Search Student Score
         </Typography>
-        <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: { xs: 1, sm: 2 },
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "flex-start",
+          }}
+        >
           <TextField
             label="Enter Registration Number"
             variant="outlined"
             fullWidth
             value={registrationNumber}
             onChange={(e) => setRegistrationNumber(e.target.value)}
+            onKeyDown={handleKeyPress}
           />
           <Button
             variant="contained"
             color="primary"
             onClick={handleSearch}
             disabled={loading}
-            sx={{ height: 56 }}
+            sx={{ height: 56, width: { xs: "100%", sm: "auto" } }}
           >
             Search
           </Button>
@@ -126,20 +150,27 @@ const SearchScores = () => {
           <Typography variant="subtitle1" gutterBottom>
             SBD: {studentScore.sbd}
           </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", margin: -1 }}>
-            {renderScoreCard("Toán", studentScore.toan)}
-            {renderScoreCard("Ngữ văn", studentScore.ngu_van)}
-            {renderScoreCard("Ngoại ngữ", studentScore.ngoai_ngu)}
-            {renderScoreCard("Vật lý", studentScore.vat_li)}
-            {renderScoreCard("Hóa học", studentScore.hoa_hoc)}
-            {renderScoreCard("Sinh học", studentScore.sinh_hoc)}
-            {renderScoreCard("Lịch sử", studentScore.lich_su)}
-            {renderScoreCard("Địa lý", studentScore.dia_li)}
-            {renderScoreCard("GDCD", studentScore.gdcd)}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              margin: -1,
+              gap: { xs: 1, sm: 2 },
+            }}
+          >
+            {renderScoreCard("Math", studentScore.toan)}
+            {renderScoreCard("Literature", studentScore.ngu_van)}
+            {renderScoreCard("Foreign Language", studentScore.ngoai_ngu)}
+            {renderScoreCard("Physics", studentScore.vat_li)}
+            {renderScoreCard("Chemistry", studentScore.hoa_hoc)}
+            {renderScoreCard("Biology", studentScore.sinh_hoc)}
+            {renderScoreCard("History", studentScore.lich_su)}
+            {renderScoreCard("Geography", studentScore.dia_li)}
+            {renderScoreCard("Civics", studentScore.gdcd)}
           </Box>
           {studentScore.ma_ngoai_ngu && (
             <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              Mã ngoại ngữ: {studentScore.ma_ngoai_ngu}
+              Foreign Language Code: {studentScore.ma_ngoai_ngu}
             </Typography>
           )}
         </Paper>
