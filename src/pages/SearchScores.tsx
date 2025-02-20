@@ -148,7 +148,7 @@ const SearchScores = () => {
             Student Scores
           </Typography>
           <Typography variant="subtitle1" gutterBottom>
-            SBD: {studentScore.sbd}
+          Registration Number: {studentScore.sbd}
           </Typography>
           <Box
             sx={{
