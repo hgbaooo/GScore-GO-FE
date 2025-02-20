@@ -60,15 +60,15 @@ const Reports = () => {
     : [];
 
   const subjects = [
-    { key: "toan", label: "Toán" },
-    { key: "ngu_van", label: "Ngữ văn" },
-    { key: "ngoai_ngu", label: "Ngoại ngữ" },
-    { key: "vat_li", label: "Vật lý" },
-    { key: "hoa_hoc", label: "Hóa học" },
-    { key: "sinh_hoc", label: "Sinh học" },
-    { key: "lich_su", label: "Lịch sử" },
-    { key: "dia_li", label: "Địa lý" },
-    { key: "gdcd", label: "GDCD" },
+    { key: "toan", label: "Math" },
+    { key: "ngu_van", label: "Literature" },
+    { key: "ngoai_ngu", label: "Foreign Language" },
+    { key: "vat_li", label: "Physics" },
+    { key: "hoa_hoc", label: "Chemistry" },
+    { key: "sinh_hoc", label: "Biology" },
+    { key: "lich_su", label: "History" },
+    { key: "dia_li", label: "Geography" },
+    { key: "gdcd", label: "Civics" },
   ];
   const ranges = ["<4", "4-6", "6-8", ">=8"];
 
@@ -85,7 +85,7 @@ const Reports = () => {
   ];
 
   const renderBarChart = () => (
-    <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={350} minWidth={300}>
       <BarChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="range" />
@@ -105,19 +105,24 @@ const Reports = () => {
   );
 
   const renderPieChart = () => {
-    const totalScores = subjects.map((subject) => ({
-      name: subject.label,
-      value: chartData.reduce(
-        (sum, item) => sum + (item[subject.key as keyof SubjectScores] || 0),
-        0
-      ),
-    }));
+    const rangeDataForPie = ranges.map((range) => {
+      let totalStudentsInRange = 0;
+      if (reportData?.[range as keyof ReportData]) {
+        totalStudentsInRange = Object.values(
+          reportData[range as keyof ReportData]
+        ).reduce((sum, count) => sum + count, 0);
+      }
+      return {
+        name: range,
+        value: totalStudentsInRange,
+      };
+    });
 
     return (
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={350} minWidth={300}>
         <PieChart>
           <Pie
-            data={totalScores}
+            data={rangeDataForPie}
             cx="50%"
             cy="50%"
             labelLine={false}
@@ -128,7 +133,7 @@ const Reports = () => {
               `${name} ${(percent * 100).toFixed(0)}%`
             }
           >
-            {totalScores.map((entry, index) => (
+            {rangeDataForPie.map((entry, index) => (
               <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
@@ -140,9 +145,12 @@ const Reports = () => {
 
   const renderTable = () => (
     <TableContainer
-      className="table-container"
       component={Paper}
-      sx={{ mt: 4 }}
+      sx={{
+        mt: 4,
+        maxWidth: "100%",
+        overflow: "auto",
+      }}
     >
       <Table aria-label="simple table" stickyHeader>
         <TableHead>
@@ -200,9 +208,8 @@ const Reports = () => {
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
-          p: 3,
-          gap: 3,
-          mb: 4,
+          gap: { xs: 2, md: 3 },
+          mb: { xs: 2, md: 4 },
           width: "100%",
           maxWidth: 1200,
           mx: "auto",
@@ -222,7 +229,7 @@ const Reports = () => {
           sx={{ p: 3, flex: 1, minHeight: 400, width: "100%" }}
         >
           <Typography variant="h6" gutterBottom>
-            Overall Subject Distribution
+            Student Distribution by Score Range
           </Typography>
           {renderPieChart()}
         </Paper>

@@ -60,22 +60,30 @@ const Dashboard = () => {
       <Typography variant="h4" gutterBottom align="center">
         Dashboard
       </Typography>
-      <Paper elevation={3} sx={{ p: 3, width: "100%", maxWidth: 1200 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          p: { xs: 2, sm: 3 },
+          width: "100%",
+          maxWidth: 1200,
+          overflow: "hidden",
+        }}
+      >
         <Typography variant="h6" gutterBottom>
           Top 10 Students of Group A
         </Typography>
-        <TableContainer className="table-container">
+        <TableContainer sx={{ maxWidth: "100%", overflow: "auto" }}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
                 <TableCell>Rank</TableCell>
-                <TableCell>SBD</TableCell>
-                <TableCell align="right">Toán</TableCell>
-                <TableCell align="right">Ngữ văn</TableCell>
-                <TableCell align="right">Ngoại ngữ</TableCell>
-                <TableCell align="right">Vật lý</TableCell>
-                <TableCell align="right">Hóa học</TableCell>
-                <TableCell align="right">Sinh học</TableCell>
+                <TableCell>Registration Number</TableCell>
+                <TableCell align="right">Math</TableCell>
+                <TableCell align="right">Literature</TableCell>
+                <TableCell align="right">Foreign Language</TableCell>
+                <TableCell align="right">Physics</TableCell>
+                <TableCell align="right">Chemistry</TableCell>
+                <TableCell align="right">Biology</TableCell>
                 <TableCell align="right">Total Score</TableCell>
               </TableRow>
             </TableHead>
