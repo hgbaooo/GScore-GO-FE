@@ -1,12 +1,18 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import { Box, CssBaseline, AppBar, Typography, Toolbar } from "@mui/material";
+import {
+  Box,
+  CssBaseline,
+  AppBar,
+  Typography,
+  Toolbar,
+  Container,
+} from "@mui/material";
 import Sidebar from "./components/Sidebar";
 import AppRoutes from "./routes";
-import { useState } from "react";
+
+const SIDEBAR_WIDTH = 240;
 
 const App = () => {
-  const [open, setOpen] = useState(true);
-
   return (
     <Router>
       <CssBaseline />
@@ -25,40 +31,38 @@ const App = () => {
           </Toolbar>
         </AppBar>
 
-        <Sidebar open={open} setOpen={setOpen} />
+        <Sidebar />
 
         <Box
           component="main"
           sx={{
             flexGrow: 1,
+            p: 3,
+            width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
+            ml: `${SIDEBAR_WIDTH}px`,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            width: `calc(100% - ${open ? 240 : 60}px)`,
-            marginLeft: `${open ? 240 : 60}px`,
-            transition: (theme) =>
-              theme.transitions.create(["margin", "width"], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-            mt: "64px",
-            p: 3,
+            minHeight: "100vh",
+            pt: "64px",
+            boxSizing: "border-box",
           }}
         >
-          <Box
+          <Container
+            maxWidth="lg"
             sx={{
-              width: "100%",
-              maxWidth: 1200,
-              textAlign: "center",
+              mt: 4,
+              mb: 4,
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
+              alignItems: "stretch",
+              width: "100%",
+              boxSizing: "border-box",
+              mx: "auto",
             }}
           >
             <AppRoutes />
-          </Box>
+          </Container>
         </Box>
       </Box>
     </Router>

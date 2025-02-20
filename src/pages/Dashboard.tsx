@@ -8,22 +8,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Container,
-  useTheme,
-  useMediaQuery,
-  Skeleton, // Import Skeleton
+  Box,
 } from "@mui/material";
 import { getTop10Students } from "../services/studentService";
-import { TopStudent } from "../types";
+import type { TopStudent } from "../types";
 import toast from "react-hot-toast";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Dashboard = () => {
   const [topStudents, setTopStudents] = useState<TopStudent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,40 +40,32 @@ const Dashboard = () => {
   }, []);
 
   if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Top 10 Students of Group A
-          </Typography>
-          <Skeleton variant="rectangular" width="100%" height={300} />
-        </Paper>
-      </Container>
-    );
+    return <LoadingSpinner message="Loading top students..." />;
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 3 }}>
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <Paper elevation={3} sx={{ p: 3, maxWidth: "lg", width: "100%" }}>
           <Typography variant="h6" color="error">
             Error: {error}
           </Typography>
         </Paper>
-      </Container>
+      </Box>
     );
   }
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box className="main-content">
+      <Typography variant="h4" gutterBottom align="center">
         Dashboard
       </Typography>
-      <Paper elevation={3} sx={{ p: 3, overflow: "hidden" }}>
+      <Paper elevation={3} sx={{ p: 3, width: "100%", maxWidth: 1200 }}>
         <Typography variant="h6" gutterBottom>
           Top 10 Students of Group A
         </Typography>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader size={isSmallScreen ? "small" : "medium"}>
+        <TableContainer className="table-container">
+          <Table stickyHeader>
             <TableHead>
               <TableRow>
                 <TableCell>Rank</TableCell>
@@ -89,7 +76,7 @@ const Dashboard = () => {
                 <TableCell align="right">Vật lý</TableCell>
                 <TableCell align="right">Hóa học</TableCell>
                 <TableCell align="right">Sinh học</TableCell>
-                <TableCell align="right">Total Score</TableCell>{" "}
+                <TableCell align="right">Total Score</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -124,7 +111,7 @@ const Dashboard = () => {
           </Table>
         </TableContainer>
       </Paper>
-    </Container>
+    </Box>
   );
 };
 

@@ -3,8 +3,6 @@ import {
   Typography,
   Box,
   Paper,
-  Skeleton,
-  Container,
   Table,
   TableBody,
   TableCell,
@@ -21,10 +19,14 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import { getReportData } from "../services/studentService";
-import { ReportData, SubjectScores } from "../types";
+import type { ReportData, SubjectScores } from "../types";
 import toast from "react-hot-toast";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Reports = () => {
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -70,29 +72,78 @@ const Reports = () => {
   ];
   const ranges = ["<4", "4-6", "6-8", ">=8"];
 
-  const renderChart = () => (
-    <ResponsiveContainer width="100%" height={400}>
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7300",
+    "#8dd1e1",
+  ];
+
+  const renderBarChart = () => (
+    <ResponsiveContainer width="100%" height={350}>
       <BarChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="range" />
         <YAxis />
         <Tooltip />
         <Legend />
-        <Bar dataKey="toan" fill="#8884d8" name="Toán" />
-        <Bar dataKey="ngu_van" fill="#82ca9d" name="Ngữ văn" />
-        <Bar dataKey="ngoai_ngu" fill="#ffc658" name="Ngoại ngữ" />
-        <Bar dataKey="vat_li" fill="#ff8042" name="Vật lý" />
-        <Bar dataKey="hoa_hoc" fill="#0088FE" name="Hóa học" />
-        <Bar dataKey="sinh_hoc" fill="#00C49F" name="Sinh học" />
-        <Bar dataKey="lich_su" fill="#FFBB28" name="Lịch sử" />
-        <Bar dataKey="dia_li" fill="#FF8042" name="Địa lý" />
-        <Bar dataKey="gdcd" fill="#AF19FF" name="GDCD" />
+        {subjects.map((subject, index) => (
+          <Bar
+            key={subject.key}
+            dataKey={subject.key}
+            fill={COLORS[index]}
+            name={subject.label}
+          />
+        ))}
       </BarChart>
     </ResponsiveContainer>
   );
 
+  const renderPieChart = () => {
+    const totalScores = subjects.map((subject) => ({
+      name: subject.label,
+      value: chartData.reduce(
+        (sum, item) => sum + (item[subject.key as keyof SubjectScores] || 0),
+        0
+      ),
+    }));
+
+    return (
+      <ResponsiveContainer width="100%" height={350}>
+        <PieChart>
+          <Pie
+            data={totalScores}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius="80%"
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, percent }) =>
+              `${name} ${(percent * 100).toFixed(0)}%`
+            }
+          >
+            {totalScores.map((entry, index) => (
+              <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  };
+
   const renderTable = () => (
-    <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
+    <TableContainer
+      className="table-container"
+      component={Paper}
+      sx={{ mt: 4 }}
+    >
       <Table aria-label="simple table" stickyHeader>
         <TableHead>
           <TableRow>
@@ -124,50 +175,67 @@ const Reports = () => {
     </TableContainer>
   );
 
+  if (loading) {
+    return <LoadingSpinner message="Loading report data..." />;
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <Paper
+          elevation={3}
+          sx={{ p: 3, bgcolor: "error.light", maxWidth: "lg", width: "100%" }}
+        >
+          <Typography variant="body1" color="error">
+            {error}
+          </Typography>
+        </Paper>
+      </Box>
+    );
+  }
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Box className="main-content">
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "7fr 3fr" },
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
           gap: 3,
-          "& > *": {
-            height: "100%",
-          },
+          mb: 4,
+          width: "100%",
+          maxWidth: 1200,
+          mx: "auto",
         }}
       >
-        {loading && (
-          <>
-            <Skeleton variant="rectangular" width="100%" height={400} />
-            <Skeleton variant="rectangular" width="100%" height={400} />
-          </>
-        )}
-        {!loading && error && (
-          <Paper elevation={3} sx={{ p: 3, bgcolor: "error.light" }}>
-            <Typography variant="body1" color="error">
-              {error}
-            </Typography>
-          </Paper>
-        )}
-        {!loading && !error && (
-          <>
-            <Paper elevation={3} sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Score Distribution by Subject
-              </Typography>
-              <Box sx={{ width: "100%" }}>{renderChart()}</Box>
-            </Paper>
-
-            <Paper elevation={3} sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Statistics
-              </Typography>
-              {renderTable()}
-            </Paper>
-          </>
-        )}
+        <Paper
+          elevation={3}
+          sx={{ p: 3, flex: 1, minHeight: 400, width: "100%" }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Score Distribution by Subject
+          </Typography>
+          {renderBarChart()}
+        </Paper>
+        <Paper
+          elevation={3}
+          sx={{ p: 3, flex: 1, minHeight: 400, width: "100%" }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Overall Subject Distribution
+          </Typography>
+          {renderPieChart()}
+        </Paper>
       </Box>
-    </Container>
+      <Paper
+        elevation={3}
+        sx={{ p: 3, width: "100%", maxWidth: 1200, mx: "auto" }}
+      >
+        <Typography variant="h6" gutterBottom>
+          Statistics
+        </Typography>
+        {renderTable()}
+      </Paper>
+    </Box>
   );
 };
 
