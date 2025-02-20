@@ -1,67 +1,49 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import {
-  Box,
-  CssBaseline,
-  AppBar,
-  Typography,
-  Toolbar,
-  Container,
-} from "@mui/material";
+import { Box, CssBaseline, Container, CircularProgress } from "@mui/material";
 import Sidebar from "./components/Sidebar";
+import Appbar from "./components/Appbar";
 import AppRoutes from "./routes";
+import { Suspense } from "react";
 
-const SIDEBAR_WIDTH = 240;
+const APPBAR_HEIGHT = 64;
 
 const App = () => {
   return (
     <Router>
       <CssBaseline />
-      <Box sx={{ display: "flex", minHeight: "100vh" }}>
-        <AppBar
-          position="fixed"
-          sx={{
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-            width: "100%",
-          }}
-        >
-          <Toolbar sx={{ justifyContent: "center" }}>
-            <Typography variant="h6" noWrap component="div">
-              G-Scores
-            </Typography>
-          </Toolbar>
-        </AppBar>
-
+      <Box sx={{ display: "flex", minHeight: "100vh", width: "100vw" }}>
+        <Appbar />
         <Sidebar />
-
         <Box
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
-            width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
-            ml: `${SIDEBAR_WIDTH}px`,
+            mt: `${APPBAR_HEIGHT}px`,
+            height: `calc(100vh - ${APPBAR_HEIGHT}px)`,
             display: "flex",
-            flexDirection: "column",
+            justifyContent: "center",
             alignItems: "center",
-            minHeight: "100vh",
-            pt: "64px",
             boxSizing: "border-box",
+            overflow: "auto",
           }}
         >
-          <Container
-            maxWidth="lg"
-            sx={{
-              mt: 4,
-              mb: 4,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "stretch",
-              width: "100%",
-              boxSizing: "border-box",
-              mx: "auto",
-            }}
-          >
-            <AppRoutes />
+          <Container maxWidth="lg">
+            <Suspense
+              fallback={
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100vh",
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              }
+            >
+              <AppRoutes />
+            </Suspense>
           </Container>
         </Box>
       </Box>
