@@ -5,11 +5,13 @@ import {
   Typography,
   TextField,
   Button,
-  Skeleton,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { getStudentScores } from "../services/studentService";
-import { StudentScore } from "../types";
+import type { StudentScore } from "../types";
 import toast from "react-hot-toast";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const SearchScores = () => {
   const [registrationNumber, setRegistrationNumber] = useState("");
@@ -43,69 +45,102 @@ const SearchScores = () => {
     }
   };
 
+  const renderScoreCard = (subject: string, score: number | undefined) => {
+    if (score === undefined || score === null) return null;
+    return (
+      <Card
+        sx={{
+          m: 1,
+          flexBasis: {
+            xs: "100%",
+            sm: "calc(50% - 16px)",
+            md: "calc(33.333% - 16px)",
+          },
+          flexGrow: 0,
+          flexShrink: 0,
+        }}
+      >
+        <CardContent>
+          <Typography variant="h6" component="div">
+            {subject}
+          </Typography>
+          <Typography variant="h4" color="primary">
+            {score.toFixed(2)}
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
-    <Box sx={{ padding: 3 }}>
-      <Paper sx={{ padding: 2, mb: 2 }}>
-        <Typography variant="h6">Search Student Score</Typography>
-        {loading ? (
-          <>
-            <Skeleton
-              variant="rectangular"
-              width="100%"
-              height={40}
-              sx={{ marginBottom: 2 }}
-            />
-            <Skeleton variant="rectangular" width={120} height={40} />
-          </>
-        ) : (
-          <>
-            <TextField
-              label="Enter Registration Number"
-              variant="outlined"
-              fullWidth
-              value={registrationNumber}
-              onChange={(e) => setRegistrationNumber(e.target.value)}
-              sx={{ marginBottom: 2 }}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSearch}
-              disabled={loading}
-            >
-              Search
-            </Button>
-          </>
-        )}
+    <Box className="main-content">
+      <Paper
+        sx={{ padding: 3, mb: 3, width: "100%", maxWidth: 800, mx: "auto" }}
+      >
+        <Typography variant="h5" gutterBottom>
+          Search Student Score
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+          <TextField
+            label="Enter Registration Number"
+            variant="outlined"
+            fullWidth
+            value={registrationNumber}
+            onChange={(e) => setRegistrationNumber(e.target.value)}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSearch}
+            disabled={loading}
+            sx={{ height: 56 }}
+          >
+            Search
+          </Button>
+        </Box>
       </Paper>
 
       {notFound && (
-        <Paper sx={{ padding: 2, backgroundColor: "#ffebee" }}>
+        <Paper
+          sx={{
+            padding: 3,
+            backgroundColor: "#ffebee",
+            width: "100%",
+            maxWidth: 800,
+            mx: "auto",
+          }}
+        >
           <Typography variant="body1" color="error">
             No student found with the provided registration number.
           </Typography>
         </Paper>
       )}
 
+      {loading && <LoadingSpinner message="Searching for student scores..." />}
+
       {studentScore && (
-        <Paper sx={{ padding: 2 }}>
-          <Typography variant="h6">Student Scores</Typography>
-          {loading ? (
-            <Skeleton variant="rectangular" width="100%" height={150} />
-          ) : (
-            <Box sx={{ mt: 2 }}>
-              <Typography>SBD: {studentScore.sbd}</Typography>
-              <Typography>Toán: {studentScore.toan}</Typography>
-              <Typography>Ngữ văn: {studentScore.ngu_van}</Typography>
-              <Typography>Ngoại ngữ: {studentScore.ngoai_ngu}</Typography>
-              <Typography>Vật lý: {studentScore.vat_li}</Typography>
-              <Typography>Hóa học: {studentScore.hoa_hoc}</Typography>
-              <Typography>Sinh học: {studentScore.sinh_hoc}</Typography>
-              <Typography>Lịch sử: {studentScore.lich_su}</Typography>
-              <Typography>Địa lý: {studentScore.dia_li}</Typography>
-              <Typography>GDCD: {studentScore.gdcd}</Typography>
-              <Typography>Mã ngoại ngữ: {studentScore.ma_ngoai_ngu}</Typography>
-            </Box>
+        <Paper sx={{ padding: 3, width: "100%", maxWidth: 800, mx: "auto" }}>
+          <Typography variant="h5" gutterBottom>
+            Student Scores
+          </Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            SBD: {studentScore.sbd}
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", margin: -1 }}>
+            {renderScoreCard("Toán", studentScore.toan)}
+            {renderScoreCard("Ngữ văn", studentScore.ngu_van)}
+            {renderScoreCard("Ngoại ngữ", studentScore.ngoai_ngu)}
+            {renderScoreCard("Vật lý", studentScore.vat_li)}
+            {renderScoreCard("Hóa học", studentScore.hoa_hoc)}
+            {renderScoreCard("Sinh học", studentScore.sinh_hoc)}
+            {renderScoreCard("Lịch sử", studentScore.lich_su)}
+            {renderScoreCard("Địa lý", studentScore.dia_li)}
+            {renderScoreCard("GDCD", studentScore.gdcd)}
+          </Box>
+          {studentScore.ma_ngoai_ngu && (
+            <Typography variant="subtitle1" sx={{ mt: 2 }}>
+              Mã ngoại ngữ: {studentScore.ma_ngoai_ngu}
+            </Typography>
           )}
         </Paper>
       )}
