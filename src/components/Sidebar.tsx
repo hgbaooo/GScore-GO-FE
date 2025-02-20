@@ -36,7 +36,7 @@ const Sidebar: React.FC = () => {
         },
       }}
     >
-      <Toolbar /> {/* Để tránh nội dung bị che bởi AppBar */}
+      <Toolbar />
       <Box sx={{ overflow: "auto" }}>
         <List>
           {menuItems.map(({ text, icon, path }) => {

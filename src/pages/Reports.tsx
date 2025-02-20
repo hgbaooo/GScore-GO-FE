@@ -200,6 +200,7 @@ const Reports = () => {
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
+          p: 3,
           gap: 3,
           mb: 4,
           width: "100%",
