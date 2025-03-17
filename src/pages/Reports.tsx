@@ -15,21 +15,21 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
   CartesianGrid,
-  ResponsiveContainer,
+  Tooltip,
   Legend,
+  ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
-import { getReportData } from "../services/studentService";
-import type { ReportData, SubjectScores } from "../types";
+import { getScoreClassification } from "../services/scoreService";
+import type { ScoreClassification } from "../types";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const Reports = () => {
-  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [scoreData, setScoreData] = useState<ScoreClassification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,10 +38,10 @@ const Reports = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getReportData();
-        setReportData(data);
+        const data = await getScoreClassification();
+        setScoreData(data);
       } catch (err) {
-        toast.error("Failed to fetch report data.");
+        toast.error("Failed to fetch score classification data.");
         setError(err instanceof Error ? err.message : "An error occurred");
         console.error(err);
       } finally {
@@ -51,13 +51,6 @@ const Reports = () => {
 
     fetchData();
   }, []);
-
-  const chartData = reportData
-    ? Object.entries(reportData).map(([range, scores]) => ({
-        range,
-        ...scores,
-      }))
-    : [];
 
   const subjects = [
     { key: "toan", label: "Math" },
@@ -70,74 +63,96 @@ const Reports = () => {
     { key: "dia_li", label: "Geography" },
     { key: "gdcd", label: "Civics" },
   ];
-  const ranges = ["<4", "4-6", "6-8", ">=8"];
 
-  const COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884d8",
-    "#82ca9d",
-    "#ffc658",
-    "#ff7300",
-    "#8dd1e1",
-  ];
+  const levels = ["excellent", "good", "average", "poor"];
+  const levelLabels = {
+    excellent: "≥8",
+    good: "6-8",
+    average: "4-6",
+    poor: "<4",
+  };
 
-  const renderBarChart = () => (
-    <ResponsiveContainer width="100%" height={350} minWidth={300}>
-      <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="range" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        {subjects.map((subject, index) => (
-          <Bar
-            key={subject.key}
-            dataKey={subject.key}
-            fill={COLORS[index]}
-            name={subject.label}
-          />
-        ))}
-      </BarChart>
-    </ResponsiveContainer>
-  );
+  const COLORS = {
+    excellent: "#0088FE",
+    good: "#00C49F",
+    average: "#FFBB28",
+    poor: "#FF8042",
+  };
+
+  const renderBarChart = () => {
+    const transformedData = scoreData.map((item) => ({
+      subject:
+        subjects.find((s) => s.key === item.subject)?.label || item.subject,
+      Excellent: item.excellent,
+      Good: item.good,
+      Average: item.average,
+      Poor: item.poor,
+    }));
+
+    return (
+      <ResponsiveContainer width="100%" height={350} minWidth={300}>
+        <BarChart
+          data={transformedData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="subject" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="Excellent" fill={COLORS.excellent} stackId="a" />
+          <Bar dataKey="Good" fill={COLORS.good} stackId="a" />
+          <Bar dataKey="Average" fill={COLORS.average} stackId="a" />
+          <Bar dataKey="Poor" fill={COLORS.poor} stackId="a" />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  };
 
   const renderPieChart = () => {
-    const rangeDataForPie = ranges.map((range) => {
-      let totalStudentsInRange = 0;
-      if (reportData?.[range as keyof ReportData]) {
-        totalStudentsInRange = Object.values(
-          reportData[range as keyof ReportData]
-        ).reduce((sum, count) => sum + count, 0);
-      }
-      return {
-        name: range,
-        value: totalStudentsInRange,
-      };
-    });
+    const totalsByLevel = scoreData.reduce(
+      (acc, item) => {
+        acc.excellent += item.excellent;
+        acc.good += item.good;
+        acc.average += item.average;
+        acc.poor += item.poor;
+        return acc;
+      },
+      { excellent: 0, good: 0, average: 0, poor: 0 }
+    );
+
+    const total = Object.values(totalsByLevel).reduce((a, b) => a + b, 0);
+    const pieData = Object.entries(totalsByLevel).map(([key, value]) => ({
+      name: levelLabels[key as keyof typeof levelLabels],
+      value,
+      percentage: (value / total) * 100,
+    }));
 
     return (
       <ResponsiveContainer width="100%" height={350} minWidth={300}>
         <PieChart>
           <Pie
-            data={rangeDataForPie}
+            data={pieData}
             cx="50%"
             cy="50%"
             labelLine={false}
             outerRadius="80%"
             fill="#8884d8"
             dataKey="value"
+            nameKey="name"
             label={({ name, percent }) =>
               `${name} ${(percent * 100).toFixed(0)}%`
             }
           >
-            {rangeDataForPie.map((entry, index) => (
-              <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+            {pieData.map((entry, index) => (
+              <Cell
+                key={entry.name}
+                fill={COLORS[levels[index] as keyof typeof COLORS]}
+              />
             ))}
           </Pie>
           <Tooltip />
+          <Legend />
         </PieChart>
       </ResponsiveContainer>
     );
@@ -155,27 +170,24 @@ const Reports = () => {
       <Table aria-label="simple table" stickyHeader>
         <TableHead>
           <TableRow>
-            <TableCell>Range</TableCell>
-            {subjects.map((subject) => (
-              <TableCell key={subject.key} align="right">
-                {subject.label}
-              </TableCell>
-            ))}
+            <TableCell>Subject</TableCell>
+            <TableCell align="right">≥8</TableCell>
+            <TableCell align="right">6-8</TableCell>
+            <TableCell align="right">4-6</TableCell>
+            <TableCell align="right">&lt;4</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {ranges.map((range) => (
-            <TableRow key={range}>
+          {scoreData.map((item) => (
+            <TableRow key={item.subject}>
               <TableCell component="th" scope="row">
-                {range}
+                {subjects.find((s) => s.key === item.subject)?.label ||
+                  item.subject}
               </TableCell>
-              {subjects.map((subject) => (
-                <TableCell key={subject.key} align="right">
-                  {reportData?.[range as keyof ReportData]?.[
-                    subject.key as keyof SubjectScores
-                  ] ?? 0}
-                </TableCell>
-              ))}
+              <TableCell align="right">{item.excellent}</TableCell>
+              <TableCell align="right">{item.good}</TableCell>
+              <TableCell align="right">{item.average}</TableCell>
+              <TableCell align="right">{item.poor}</TableCell>
             </TableRow>
           ))}
         </TableBody>
